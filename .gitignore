@@ -1,0 +1,18 @@
+build
+History
+Project Outputs for *
+Project Logs for *
+.vscode
+*.SchDocPreview
+*.PcbDocPreview
+*.Annotation
+*.AnnotationPreview
+*.exe
+*.o
+*.crf
+*.d
+obj/*.o
+json_rpc/gen
+build.sh
+clean.sh
+sftp.sh
