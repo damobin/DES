@@ -53,48 +53,29 @@ void DES::caculate()
 	int temp;
 	unsigned char subKeyBit[56];
 	unsigned char subKey[8];
+	array<int,KEYLENTH>  arsubKey(arDESkey);
+	vector<int>          ivtinputtemp(inputDESdata);
 	deque<unsigned char> partHead(28);
 	deque<unsigned char> partTail(28);
 	//sub key creat
 	//EXC KEY
 	cout<<"caculate!!"<<endl;
-#if  1
-	//对秘钥进行表格置换
-	for(auto i =arDESkeyExcBook.begin() ; i != arDESkeyExcBook.end() ; i++){
-		bytepos = (*i) / 8;
-#if     1
-		//bit list little -- endian
-		bitpos  = 8-((*i) - bytepos*8);
-#else
-		//bit list big    -- endian
-		bitpos  = ((*i) - bytepos*8);
-#endif
-		temp 	= arDESkey[bytepos] & 0xff;
-		temp = temp & (1<<bitpos);
-		subKeyBit[index] = temp;
-		index++;
-	}
-#endif
-	
-	//秘钥的二进制转为16进制
+	//对秘钥进行表格1置换
+	excBytetoBitBox<array<int,KEYEXCBOOKLENTH>,array<int,KEYLENTH>>\
+		(arDESkeyExcBook,arsubKey,7);
 	for(int i = 0;i<8;i++){
-		subKey[i] = 0;
+		uint8_t bitGetobj=0x40;
 		for(int j = 0;j<7;j++){
-			if( subKeyBit[ j + i*7 ] ){
-				subKey[i] <<= 1;
-				subKey[i] |=  1;
-			}else{
-				subKey[i] <<= 1;
-			}
 			//秘钥二进制分为两块part A  part B
 			if(i<4)
-				partHead[i*7 + j] = subKeyBit[j+i*7];
+				partHead[i*7 + j]     = arsubKey[i] & bitGetobj;
 			else
-				partTail[(i-4)*7 + j] = subKeyBit[j+i*7];
+				partTail[(i-4)*7 + j] = arsubKey[i] & bitGetobj;
+			bitGetobj >>= 1;
 		}
-		cout << hex <<setw(2)<< static_cast<int>(subKey[i]) << " ";
 	}
-	//将PART A 和 PART B一次生成子秘钥存储到 数组中
+	
+	//将PART A 和 PART B生成子秘钥存储到 数组中
 	for(unsigned int i =0 ;i<17;i++){
 		if(i==0){
 			deque<unsigned char>::iterator it;
@@ -129,38 +110,56 @@ void DES::caculate()
 		}	
 	}
 	//使用PC-2 表格对子秘钥进行转置
-	for(int i=0;i<16;i++)
-		excBytetoBitBox< array<int,48> , array<int,8> >(arDESsubkeyExcBook,subDESkey[i],6);
+	for(int i=0;i<17;i++)
+		excBytetoBitBox< array<int,SUBKEYEXCBOOKLENTH> , array<int,8> >	\
+			(arDESsubkeyExcBook,subDESkey[i],6);
 	
-	
-	
+	excBytetoBitBox< array<int,INPUTEXCBOOKLENTH> , vector<int> >	\
+		(arDESkeyInputBook,ivtinputtemp,8);
+	PRINTSTRDATA(ivtinputtemp,16,16);
 }
 
 //对输入数据  使用表格进行位转置
-template<typename inarMax,typename outarMax>
+template<typename inarMax,typename inarKeyMax>
 void excBytetoBitBox(
 	inarMax &inputMaxtrix,
-	outarMax &boxMaxtrix,
+	inarKeyMax &keyMaxtrix,
 	int level)
 {
 	uint8_t temp,index;
+	uint8_t affectBit;
 	int bytepos,bitpos;
-	vector<int> bitBuff;
-	
+	vector<uint8_t> bitBuff;
+	affectBit = level+1;
 	//对秘钥进行表格置换
 	for(auto i =inputMaxtrix.begin() ; i != inputMaxtrix.end() ; i++){
-		bytepos = (*i) / 8;
+		bytepos = (*i) / affectBit;
+		if((*i) % affectBit == 0 )
+			bytepos--;
 #if     1
 		//bit list little -- endian
-		bitpos  = 8-((*i) - bytepos*8);
+		bitpos  = affectBit-((*i) - bytepos*affectBit);
 #else
 		//bit list big    -- endian
-		bitpos  = ((*i) - bytepos*8);
+		bitpos  = ((*i) - bytepos*affectBit);
 #endif
-		temp 	= DES::arDESkey[bytepos] & 0xff;
+		
+		temp 	= keyMaxtrix[bytepos] & 0xff;
 		temp = temp & (1<<bitpos);
-		boxMaxtrix[index] = temp;
+		bitBuff.push_back(temp);
 		index++;
+	}
+	//after exc data exc hex list
+	for(int i = 0;i<keyMaxtrix.size();i++){
+		keyMaxtrix[i] = 0;
+		for(int j = 0;j<level;j++){
+			if( bitBuff[ j + i*level ] ){
+				keyMaxtrix[i] <<= 1;
+				keyMaxtrix[i] |=  1;
+			}else{
+				keyMaxtrix[i] <<= 1;
+			}
+		}
 	}
 	
 }
@@ -169,9 +168,7 @@ void excBytetoBitBox(
 unsigned char bitGetByte(deque<unsigned char>::iterator &it,unsigned int u32lens)
 {
 	unsigned char temp=0;
-	cout<<endl;
 	for(int i=0;i<u32lens;i++){
-		cout <<hex<< static_cast<int>(*it) <<" ";
 		if(*it++){
 			temp <<= 1;
 			temp  |= 1;
@@ -179,7 +176,6 @@ unsigned char bitGetByte(deque<unsigned char>::iterator &it,unsigned int u32lens
 			temp <<= 1;
 		}
 	}
-	cout<<endl;
 	return temp;
 }
 

@@ -40,9 +40,9 @@ private:
 //funs declear
 unsigned char bitGetByte(deque<unsigned char>::iterator &it,unsigned int u32lens);
 void shiftLeftMove(deque<unsigned char> &deq,int shiftNum);
-template<typename inarMax,typename outarMax>
+template<typename inarMax,typename inarKeyMax>
 void excBytetoBitBox(
 	inarMax &inputMaxtrix,
-	outarMax &boxMaxtrix,
+	inarKeyMax &keyMaxtrix,
 	int level);
 #endif

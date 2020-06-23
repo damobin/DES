@@ -29,17 +29,18 @@ typedef unsigned short int uint16_t;
 	if(len<=step){								\
 		printf("\n");							\
 		for(int a=0;  a<len;  a++){				\
-			printf("%02x ",*(src+a));			\
+			printf("%02x ",src[a]);				\
 		}										\
 	}else{										\
 		printf("\n");							\
 		for(int a=0;  a<len;  a++){				\
-			printf("%02x ",*(src+a));			\
+			printf("%02x ",src[a]);				\
 			if(a!=0 && (a+1)%step == 0){		\
 				printf("\n");					\
 			}									\
 		}										\
 	}											\
+	printf("\n");								\
 }while(0);
 
 
