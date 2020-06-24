@@ -62,7 +62,7 @@ void DES::caculate()
 	cout<<"caculate!!"<<endl;
 	//对秘钥进行表格1置换
 	excBytetoBitBox<array<int,KEYEXCBOOKLENTH>,array<int,KEYLENTH>>\
-		(arDESkeyExcBook,arsubKey,7);
+		(arDESkeyExcBook,arsubKey,8,7);
 	for(int i = 0;i<8;i++){
 		uint8_t bitGetobj=0x40;
 		for(int j = 0;j<7;j++){
@@ -112,10 +112,10 @@ void DES::caculate()
 	//使用PC-2 表格对子秘钥进行转置
 	for(int i=0;i<17;i++)
 		excBytetoBitBox< array<int,SUBKEYEXCBOOKLENTH> , array<int,8> >	\
-			(arDESsubkeyExcBook,subDESkey[i],6);
+			(arDESsubkeyExcBook,subDESkey[i],7,6);
 	
 	excBytetoBitBox< array<int,INPUTEXCBOOKLENTH> , vector<int> >	\
-		(arDESkeyInputBook,ivtinputtemp,7);
+		(arDESkeyInputBook,ivtinputtemp,8,8);
 	PRINTSTRDATA(ivtinputtemp,8,16);
 }
 
@@ -124,26 +124,26 @@ template<typename inarMax,typename inarKeyMax>
 void excBytetoBitBox(
 	inarMax &inputMaxtrix,
 	inarKeyMax &keyMaxtrix,
-	int level)
+	int level,
+	int bitnum)
 {
 	uint8_t temp,index;
 	uint8_t affectBit;
 	int bytepos,bitpos;
 	vector<uint8_t> bitBuff;
-	affectBit = level+1;
 	//对秘钥进行表格置换
 	for(auto i =inputMaxtrix.begin() ; i != inputMaxtrix.end() ; i++){
-		bytepos = (*i) / affectBit;
-		if((*i) % affectBit == 0 ){
+		bytepos = (*i) / level;
+		if((*i) % level == 0 ){
 			bytepos--;
 			bitpos=0;
 		}else{
 #if     1
 			//bit list little -- endian
-			bitpos  = affectBit-((*i) - bytepos*affectBit);
+			bitpos  = level-((*i) - bytepos*level);
 #else
 			//bit list big    -- endian
-			bitpos  = ((*i) - bytepos*affectBit);
+			bitpos  = ((*i) - bytepos*level);
 #endif
 
 		}
@@ -155,8 +155,8 @@ void excBytetoBitBox(
 	//after exc data exc hex list
 	for(int i = 0;i<keyMaxtrix.size();i++){
 		keyMaxtrix[i] = 0;
-		for(int j = 0;j<level;j++){
-			if( bitBuff[ j + i*level ] ){
+		for(int j = 0;j<bitnum;j++){
+			if( bitBuff[ j + i*bitnum ] ){
 				keyMaxtrix[i] <<= 1;
 				keyMaxtrix[i] |=  1;
 			}else{

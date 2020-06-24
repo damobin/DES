@@ -44,5 +44,6 @@ template<typename inarMax,typename inarKeyMax>
 void excBytetoBitBox(
 	inarMax &inputMaxtrix,
 	inarKeyMax &keyMaxtrix,
-	int level);
+	int level,
+	int bitnum);
 #endif
