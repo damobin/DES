@@ -11,6 +11,7 @@
 #define KEYLENTH  			8
 #define KEYEXCBOOKLENTH  	(8*7)
 #define INPUTEXCBOOKLENTH  	(8*8)
+#define INPUTSUBBOOKLENTH   (7*8)
 #define SUBKEYEXCBOOKLENTH  (6*8)
 using namespace std;
 class DES{
@@ -24,12 +25,14 @@ public:
 	static ifstream &exchangeKeys(ifstream &);
 	void caculate();
 
-	static array<int,ROUNDLENTH> 		arDESround;			//DES的轮常数
-	static array<int,KEYLENTH> 			arDESkey;			//DES的秘钥
-	static array<int,KEYEXCBOOKLENTH>   arDESkeyExcBook;	//DES的秘钥置换表格
-	static array<int,INPUTEXCBOOKLENTH> arDESkeyInputBook;	//DES的输入置换表格
+	static array<int,ROUNDLENTH> 		 arDESround;		//DES的轮常数
+	static array<int,KEYLENTH> 			 arDESkey;			//DES的秘钥
+	static array<int,KEYEXCBOOKLENTH>    arDESkeyExcBook;	//DES的秘钥置换表格
+	static array<int,INPUTEXCBOOKLENTH>  arDESInputBook;	//DES的输入置换表格
+	static array<int,INPUTSUBBOOKLENTH>  arDESSubdataExcBook;//DES In data Exc Book
 	static array<int,SUBKEYEXCBOOKLENTH> arDESsubkeyExcBook;//DES
 private:
+	array<array<int,8>,17> subDESInData={};			//DESsubdata
 	array<array<int,8>,17> subDESkey={};			//DESsubKey
 	vector<int>  			inputDESdata;			//DES输入数据
 	vector<int>  			outputDESdata;			//DES输出数据
@@ -45,5 +48,11 @@ void excBytetoBitBox(
 	inarMax &inputMaxtrix,
 	inarKeyMax &keyMaxtrix,
 	int level,
-	int bitnum);
+	int bitnum);							//box exc funs
+	
+template<typename srcMax,typename desMax>
+bool XORmaxtrix(
+	srcMax &inputMaxtrix,
+	desMax &outputMaxtrix
+	);										//contain xor funs
 #endif

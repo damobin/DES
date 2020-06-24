@@ -12,6 +12,17 @@ array<int,KEYLENTH> 		 DES::arDESkey	     =\
    1 ,  2 ,  3 ,  4 ,  5 ,  6 ,  7 ,  8 ,
    /*9 , 10 , 11 , 12 , 13 , 14 , 15 , 16 */
 };
+array<int,INPUTSUBBOOKLENTH> 	 DES::arDESSubdataExcBook=\
+{ 
+  32 ,  1 ,  2 ,  3 ,  4 ,  5 ,
+   4 ,  5 ,  6 ,  7 ,  8 ,  9 ,
+   8 ,  9 , 10 , 11 , 12 , 13 ,
+  12 , 13 , 14 , 15 , 16 , 17 ,
+  16 , 17 , 18 , 19 , 20 , 21 ,
+  20 , 21 , 22 , 23 , 24 , 25 ,
+  24 , 25 , 26 , 27 , 28 , 29 ,
+  28 , 29 , 30 , 31 , 32 ,  1 
+};
 array<int,KEYEXCBOOKLENTH> 	 DES::arDESkeyExcBook=\
 { 
   57 , 49 , 41 , 33 , 25 , 17 ,  9,
@@ -34,7 +45,7 @@ array<int,SUBKEYEXCBOOKLENTH> DES::arDESsubkeyExcBook=\
   44 , 49 , 39 , 56 , 34 , 53 ,
   46 , 42 , 50 , 36 , 29 , 32 
 };
-array<int,INPUTEXCBOOKLENTH> DES::arDESkeyInputBook=\
+array<int,INPUTEXCBOOKLENTH> DES::arDESInputBook=\
 {
   58 , 50 , 42 , 34 , 26 , 18 , 10 ,  2,
   60 , 52 , 44 , 36 , 28 , 20 , 12 ,  4,
@@ -50,27 +61,31 @@ void DES::caculate()
 {
 	int index=0;
 	int bytepos,bitpos;
-	int temp;
+	int temp,affectBit,level;
 	unsigned char subKeyBit[56];
 	unsigned char subKey[8];
 	array<int,KEYLENTH>  arsubKey(arDESkey);
 	vector<int>          ivtinputtemp(inputDESdata);
 	deque<unsigned char> partHead(28);
 	deque<unsigned char> partTail(28);
+	deque<unsigned char> inDpartHead(32);
+	deque<unsigned char> inDpartTail(32);
 	//sub key creat
 	//EXC KEY
 	cout<<"caculate!!"<<endl;
 	//对秘钥进行表格1置换
+	affectBit = 7;
+	level	  = 8;
 	excBytetoBitBox<array<int,KEYEXCBOOKLENTH>,array<int,KEYLENTH>>\
-		(arDESkeyExcBook,arsubKey,8,7);
-	for(int i = 0;i<8;i++){
-		uint8_t bitGetobj=0x40;
-		for(int j = 0;j<7;j++){
+		(arDESkeyExcBook,arsubKey,level,affectBit);
+	for(int i = 0;i<level;i++){
+		uint8_t bitGetobj= 1<<(affectBit-1);
+		for(int j = 0;j<affectBit;j++){
 			//秘钥二进制分为两块part A  part B
 			if(i<4)
-				partHead[i*7 + j]     = arsubKey[i] & bitGetobj;
+				partHead[i*affectBit + j]     = arsubKey[i] & bitGetobj;
 			else
-				partTail[(i-4)*7 + j] = arsubKey[i] & bitGetobj;
+				partTail[(i-4)*affectBit + j] = arsubKey[i] & bitGetobj;
 			bitGetobj >>= 1;
 		}
 	}
@@ -110,13 +125,62 @@ void DES::caculate()
 		}	
 	}
 	//使用PC-2 表格对子秘钥进行转置
+	affectBit = 6;
+	level	  = 7;
 	for(int i=0;i<17;i++)
 		excBytetoBitBox< array<int,SUBKEYEXCBOOKLENTH> , array<int,8> >	\
-			(arDESsubkeyExcBook,subDESkey[i],7,6);
-	
+			(arDESsubkeyExcBook,subDESkey[i],level,affectBit);
+			
+	//used box export Input data
+	affectBit = 8;
+	level	  = 8;
 	excBytetoBitBox< array<int,INPUTEXCBOOKLENTH> , vector<int> >	\
-		(arDESkeyInputBook,ivtinputtemp,8,8);
+		(arDESInputBook,ivtinputtemp,level,affectBit);
 	PRINTSTRDATA(ivtinputtemp,8,16);
+	for(int i = 0;i<level;i++){
+		uint8_t bitGetobj= 1<<(affectBit-1);
+		for(int j = 0;j<affectBit;j++){
+			//秘钥二进制分为两块part A  part B
+			if(i<4)
+				inDpartHead[i*affectBit + j]     = ivtinputtemp[i] & bitGetobj;
+			else
+				inDpartTail[(i-4)*affectBit + j] = ivtinputtemp[i] & bitGetobj;
+			bitGetobj >>= 1;
+		}
+	}
+	// creat subInbyte
+	for(int i=0;i<17;i++){
+		if(i==0){
+			deque<unsigned char>::iterator it;
+			for(unsigned int j=0 ;j<8;j++){
+				if(j<4){
+					it = inDpartHead.begin() +j*level;
+					subDESInData[i][j] = bitGetByte(it  ,level );
+				}else{
+					it = inDpartTail.begin()+ (j-4)*level;
+					subDESInData[i][j] = bitGetByte(it  ,level );
+				}
+			}
+		}else{
+			level 		= 8;
+			affectBit 	= 6;
+			array<int,8> arInTempHead={subDESInData[i-1][0],subDESInData[i-1][1],\
+				subDESInData[i-1][2],subDESInData[i-1][3]};
+			array<int,8> arInTempTail={subDESInData[i-1][4],subDESInData[i-1][5],\
+				subDESInData[i-1][6],subDESInData[i-1][7]};
+				
+			
+			PRINTSTRDATA(arInTempTail,8,16);
+			//last ln rn  	subDESInData[i-1][]
+			excBytetoBitBox< array<int,INPUTSUBBOOKLENTH> , array<int,8> >	\
+				(arDESSubdataExcBook,arInTempTail,level,affectBit);
+			PRINTSTRDATA(arInTempTail,8,16);
+			XORmaxtrix< array<int,8>,array<int,8> >(subDESkey[i],arInTempTail);
+			PRINTSTRDATA(arInTempTail,8,16);
+		}
+	}
+	
+	
 }
 
 //对输入数据  使用表格进行位转置
@@ -164,6 +228,22 @@ void excBytetoBitBox(
 			}
 		}
 	}
+}
+
+
+template<typename srcMax,typename desMax>
+bool XORmaxtrix(
+	srcMax &inputMaxtrix,
+	desMax &outputMaxtrix
+	)
+{
+	if(inputMaxtrix.size()!=outputMaxtrix.size()){
+		return false;
+	}
+	for(auto i=inputMaxtrix.begin(),j=outputMaxtrix.begin();i!=inputMaxtrix.end();i++,j++){
+		(*j) = (*i)^(*j);
+	}
+	return true;
 }
 
 
