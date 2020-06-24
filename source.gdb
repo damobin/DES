@@ -4,5 +4,11 @@ define set_args
 end
 
 define disall
-	display des
+	display inputMaxtrix
+	display keyMaxtrix
+	display bytepos
+	display bitpos
+	display *i
+	display bitBuff
+
 end

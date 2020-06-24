@@ -115,8 +115,8 @@ void DES::caculate()
 			(arDESsubkeyExcBook,subDESkey[i],6);
 	
 	excBytetoBitBox< array<int,INPUTEXCBOOKLENTH> , vector<int> >	\
-		(arDESkeyInputBook,ivtinputtemp,8);
-	PRINTSTRDATA(ivtinputtemp,16,16);
+		(arDESkeyInputBook,ivtinputtemp,7);
+	PRINTSTRDATA(ivtinputtemp,8,16);
 }
 
 //对输入数据  使用表格进行位转置
@@ -134,16 +134,19 @@ void excBytetoBitBox(
 	//对秘钥进行表格置换
 	for(auto i =inputMaxtrix.begin() ; i != inputMaxtrix.end() ; i++){
 		bytepos = (*i) / affectBit;
-		if((*i) % affectBit == 0 )
+		if((*i) % affectBit == 0 ){
 			bytepos--;
+			bitpos=0;
+		}else{
 #if     1
-		//bit list little -- endian
-		bitpos  = affectBit-((*i) - bytepos*affectBit);
+			//bit list little -- endian
+			bitpos  = affectBit-((*i) - bytepos*affectBit);
 #else
-		//bit list big    -- endian
-		bitpos  = ((*i) - bytepos*affectBit);
+			//bit list big    -- endian
+			bitpos  = ((*i) - bytepos*affectBit);
 #endif
-		
+
+		}
 		temp 	= keyMaxtrix[bytepos] & 0xff;
 		temp = temp & (1<<bitpos);
 		bitBuff.push_back(temp);
@@ -161,7 +164,6 @@ void excBytetoBitBox(
 			}
 		}
 	}
-	
 }
 
 
@@ -221,7 +223,7 @@ istream & operator >>(istream &os,DES &D)
 {
 	int temp,lable=0;
 	cout<<"input intdata: "<<endl;
-	while(temp != 0xffff && lable<16 && os>>hex>>temp ){
+	while(temp != 0xffff && lable<8 && os>>hex>>temp ){
 		D.inputDESdata.push_back(temp&0xff);
 		lable++;
 		D.decLens = lable;
@@ -231,7 +233,7 @@ istream & operator >>(istream &os,DES &D)
 ifstream &operator >>(ifstream &ifs,DES &D)
 {
 	int temp,lable=0;
-	while(temp != 0xffff && lable<16 && ifs>>hex>>temp){
+	while(temp != 0xffff && lable<8 && ifs>>hex>>temp){
 		D.inputDESdata.push_back(temp&0xff);
 		lable++;
 		D.decLens = lable;
