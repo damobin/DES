@@ -13,6 +13,8 @@
 #define INPUTEXCBOOKLENTH  	(8*8)
 #define INPUTSUBBOOKLENTH   (7*8)
 #define SUBKEYEXCBOOKLENTH  (6*8)
+#define DESS_BOXLENTH  		(4*16)
+#define S_BOX_NUM			8
 using namespace std;
 class DES{
 	friend ostream  &operator  <<(ostream &,const DES &);
@@ -25,12 +27,13 @@ public:
 	static ifstream &exchangeKeys(ifstream &);
 	void caculate();
 
-	static array<int,ROUNDLENTH> 		 arDESround;		//DES的轮常数
-	static array<int,KEYLENTH> 			 arDESkey;			//DES的秘钥
-	static array<int,KEYEXCBOOKLENTH>    arDESkeyExcBook;	//DES的秘钥置换表格
-	static array<int,INPUTEXCBOOKLENTH>  arDESInputBook;	//DES的输入置换表格
-	static array<int,INPUTSUBBOOKLENTH>  arDESSubdataExcBook;//DES In data Exc Book
-	static array<int,SUBKEYEXCBOOKLENTH> arDESsubkeyExcBook;//DES
+	static array<int,ROUNDLENTH> 		 				arDESround;		 	//DES的轮常数
+	static array<int,KEYLENTH> 			 				arDESkey;			//DES的秘钥
+	static array<int,KEYEXCBOOKLENTH>    				arDESkeyExcBook;	//DES的秘钥置换表格
+	static array<int,INPUTEXCBOOKLENTH>  				arDESInputBook;	 	//DES的输入置换表格
+	static array<int,INPUTSUBBOOKLENTH>  				arDESSubdataExcBook;//DES In data Exc Book
+	static array<int,SUBKEYEXCBOOKLENTH> 				arDESsubkeyExcBook; //DES
+	static array<array<int,DESS_BOXLENTH>,S_BOX_NUM> 	arDESSBOX;			//DES S-BOX
 private:
 	array<array<int,8>,17> subDESInData={};			//DESsubdata
 	array<array<int,8>,17> subDESkey={};			//DESsubKey
