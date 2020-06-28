@@ -56,9 +56,8 @@ array<int,INPUTEXCBOOKLENTH> DES::arDESInputBook=\
   61 , 53 , 45 , 37 , 29 , 21 , 13 ,  5,
   63 , 55 , 47 , 39 , 31 , 23 , 15 ,  7
 };
-array< array<int,DESS_BOXLENTH>, S_BOX_NUM > DES::arDESSBOX={{},{},{},{},{},{},{},{}};
-		/*
-{
+array< array<int,DESS_BOXLENTH>, S_BOX_NUM > DES::arDESSBOX=\
+{{
 	{
      14,   4,  13,  1,   2, 15,  11,  8,   3, 10,   6, 12,   5,  9,   0,  7,
       0,  15,   7,  4,  14,  2,  13,  1,  10,  6,  12, 11,   9,  5,   3,  8,
@@ -113,8 +112,7 @@ array< array<int,DESS_BOXLENTH>, S_BOX_NUM > DES::arDESSBOX={{},{},{},{},{},{},{
       7,  11,   4,  1,   9, 12,  14,  2,   0,  6,  10, 13,  15,  3,   5,  8,
       2,   1,  14,  7,   4, 10,   8, 13,  15, 12,   9,  0,   3,  5,   6, 11
 	},
-	 */
-}
+}};
 
 //DES caculate
 void DES::caculate()
