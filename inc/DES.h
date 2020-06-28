@@ -15,6 +15,12 @@
 #define SUBKEYEXCBOOKLENTH  (6*8)
 #define DESS_BOXLENTH  		(4*16)
 #define S_BOX_NUM			8
+#define P_BOX_NUM			(4*8)
+#define IP_BOX_NUM			(8*8)
+
+
+#define COMBINA_HEX(LowHex,HightHex)	(LowHex | (HightHex<<4))
+
 using namespace std;
 class DES{
 	friend ostream  &operator  <<(ostream &,const DES &);
@@ -34,6 +40,8 @@ public:
 	static array<int,INPUTSUBBOOKLENTH>  				arDESSubdataExcBook;//DES In data Exc Book
 	static array<int,SUBKEYEXCBOOKLENTH> 				arDESsubkeyExcBook; //DES
 	static array<array<int,DESS_BOXLENTH>,S_BOX_NUM> 	arDESSBOX;			//DES S-BOX
+	static array<int,P_BOX_NUM> 						arDESPBOX;			//DES p-BOX
+	static array<int,IP_BOX_NUM> 						arDESENDIPBOX;		//DES IP-BOX
 private:
 	array<array<int,8>,17> subDESInData={};			//DESsubdata
 	array<array<int,8>,17> subDESkey={};			//DESsubKey
@@ -58,4 +66,5 @@ bool XORmaxtrix(
 	srcMax &inputMaxtrix,
 	desMax &outputMaxtrix
 	);										//contain xor funs
+int excDataByS_Box(array<int,DESS_BOXLENTH> subS_BOX,int inputData);
 #endif

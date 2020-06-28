@@ -114,6 +114,30 @@ array< array<int,DESS_BOXLENTH>, S_BOX_NUM > DES::arDESSBOX=\
 	},
 }};
 
+array<int,P_BOX_NUM> 		DES::arDESPBOX=\
+{
+	 16  , 7  ,20  ,21,
+	 29  ,12  ,28  ,17,
+	  1  ,15  ,23  ,26,
+	  5  ,18  ,31  ,10,
+	  2  , 8  ,24  ,14,
+	 32  ,27  , 3  , 9,
+	 19  ,13  ,30  , 6,
+	 22  ,11  , 4  ,25
+};
+
+array<int,IP_BOX_NUM> 	DES::arDESENDIPBOX = \
+{
+	40, 8,48,16,56,24,64,32,
+	39, 7,47,15,55,23,63,31,
+	38, 6,46,14,54,22,62,30,
+	37, 5,45,13,53,21,61,29,
+	36, 4,44,12,52,20,60,28,
+	35, 3,43,11,51,19,59,27,
+	34, 2,42,10,50,18,58,26,
+	33, 1,41, 9,49,17,57,25
+};
+
 //DES caculate
 void DES::caculate()
 {
@@ -194,7 +218,7 @@ void DES::caculate()
 	level	  = 8;
 	excBytetoBitBox< array<int,INPUTEXCBOOKLENTH> , vector<int> >	\
 		(arDESInputBook,ivtinputtemp,level,affectBit);
-	PRINTSTRDATA(ivtinputtemp,8,16);
+
 	for(int i = 0;i<level;i++){
 		uint8_t bitGetobj= 1<<(affectBit-1);
 		for(int j = 0;j<affectBit;j++){
@@ -227,30 +251,74 @@ void DES::caculate()
 			array<int,8> arInTempTail={subDESInData[i-1][4],subDESInData[i-1][5],\
 				subDESInData[i-1][6],subDESInData[i-1][7]};
 				
-			
-			PRINTSTRDATA(arInTempTail,8,16);
 			//last ln rn  	subDESInData[i-1][]
 			excBytetoBitBox< array<int,INPUTSUBBOOKLENTH> , array<int,8> >	\
 				(arDESSubdataExcBook,arInTempTail,level,affectBit);
-			PRINTSTRDATA(arInTempTail,8,16);
-			
+
+			//exc xor funs     if lens err throw err
 			try{
 				XORmaxtrix< array<int,8>,array<int,8> >(subDESkey[i],arInTempTail);
 			}catch(const char *msg){
 				cout <<"ERR :"<<msg<<endl;
 				exit(0);
 			}
-			PRINTSTRDATA(arInTempTail,8,16);
-			
 			//used s-box exc data
-				
+			for(int j=0;j<8;j++){
+				arInTempTail[j] = excDataByS_Box(DES::arDESSBOX[j],arInTempTail[j]);
+			}
+
+			//P_BOX EXC DATA  
+			level 		= 4;
+			affectBit 	= 4;
+			excBytetoBitBox< array<int,P_BOX_NUM> , array<int,8> >	\
+				(arDESPBOX,arInTempTail,level,affectBit);
 			
-			
-		}
+			for(int j=0;j<8;j+=2){
+				arInTempTail[j/2]=COMBINA_HEX(arInTempTail[j+1],arInTempTail[j]);
+			}
+			//exc xor funs     if lens err throw err
+			try{
+				XORmaxtrix< array<int,8>,array<int,8> >(arInTempHead,arInTempTail);
+			}catch(const char *msg){
+				cout <<"ERR :"<<msg<<endl;
+				exit(0);
+			}
+			for(int j=0;j<8;j++){
+				if(j<4)
+					subDESInData[i-1+1][j] = subDESInData[i-1][j+4];
+				else
+					subDESInData[i-1+1][j] = arInTempTail[j-4];
+			}
+		}                     
+	}
+	//exc head tail pos
+	for(int temp,i =0;i<4;i++){
+		temp 				= subDESInData[16][i];
+		subDESInData[16][i] 	= subDESInData[16][i+4];
+		subDESInData[16][i+4] 	= temp;
 	}
 	
+	PRINTSTRDATA(subDESInData[16],8,16);
+	//P_BOX EXC DATA  
+	level 		= 8;
+	affectBit 	= 8;
+	excBytetoBitBox< array<int,IP_BOX_NUM> , array<int,8> >	\
+		(arDESENDIPBOX,subDESInData[16],level,affectBit);
 	
+	PRINTSTRDATA(subDESInData[16],8,16);
 }
+
+int excDataByS_Box(array<int,DESS_BOXLENTH> subS_BOX,int inputData)
+{
+	uint8_t index;
+	uint8_t line_num,col_num,temp = inputData & 0x3f;  //6 bit affect
+	line_num = (( temp & 0x20 )>>4) | (temp & 0x01);
+	col_num  = ((temp & 0x1e) >>1);
+	index    = line_num * 0x10 + col_num;
+	return   subS_BOX[index];
+}
+
+
 
 //对输入数据  使用表格进行位转置
 template<typename inarMax,typename inarKeyMax>
