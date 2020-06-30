@@ -1,0 +1,180 @@
+rm -rf ./src/obj ./bin/DES
+mkdir -p ./src/obj
+g++ -g -I ./inc -c -o  src/obj/main.o src/main.cc
+g++ -g -I ./inc -c -o  src/obj/DES.o src/DES.cc
+g++ -o ./bin/DES ./src/obj/main.o ./src/obj/DES.o 
+sucess!
+256K	./bin/DES
+input key:
+caculate!!
+
+
+
+72 05 d5 3d 0a 4c d9 95 
+
+c8 35 9c 98 72 05 d5 3d 
+
+02 a6 89 20 c8 35 9c 98 
+
+ef 90 84 94 02 a6 89 20 
+
+48 27 22 5c ef 90 84 94 
+
+f1 d1 b0 c5 48 27 22 5c 
+
+a7 b3 20 11 f1 d1 b0 c5 
+
+e9 66 df 47 a7 b3 20 11 
+
+38 45 87 c9 e9 66 df 47 
+
+ca 59 bb 06 38 45 87 c9 
+
+25 67 ef c8 ca 59 bb 06 
+
+d1 47 37 21 25 67 ef c8 
+
+e0 85 c3 b9 d1 47 37 21 
+
+18 5e 87 cd e0 85 c3 b9 
+
+5f a7 48 65 18 5e 87 cd 
+
+e3 31 8e 77 5f a7 48 65 
+dec Lens: 8
+enc Lens: 117
+input:
+85 e8 13 54 f a b4 5 
+output:
+f3 da 5b 4c 62 b3 c7 98 
+key:
+13 34 57 79 9b bc df f1 
+subkey:
+32 33 36  b  3 21 1f 35 
+ 6 30  b 2f 3f  7  1 32 
+1e 1a 3b 19 36 3c 27 25 
+15 1f 32  a 10 2c 3e 19 
+1c 2a 37 16 36 33 14 1d 
+1f  e 30  7 3a 35  e 28 
+18 3a 14 3e 14  7 2c 2f 
+3b  8 12 37 3d 21 22 3c 
+3d 38 28 3a 30 13 2f 3b 
+38  d 2f 2b 3b 1e 1e  1 
+2c 1f  d  7 2e 24 19  f 
+ 8 15 3f 13 37 2d  e  6 
+1d 17  7 35 25  6 1f 29 
+25 3c 17 11 3e 2b 29  1 
+17 34  e 37 3c 2e 1c 3a 
+2f 39  6  d  f 13 3c  a 
+32 33 36  b  3 21 1f 35 
+
+subDecDESkey:
+32 33 36  b  3 21 1f 35 
+32 33 36  b  3 21 1f 35 
+2f 39  6  d  f 13 3c  a 
+17 34  e 37 3c 2e 1c 3a 
+25 3c 17 11 3e 2b 29  1 
+1d 17  7 35 25  6 1f 29 
+ 8 15 3f 13 37 2d  e  6 
+2c 1f  d  7 2e 24 19  f 
+38  d 2f 2b 3b 1e 1e  1 
+3d 38 28 3a 30 13 2f 3b 
+3b  8 12 37 3d 21 22 3c 
+18 3a 14 3e 14  7 2c 2f 
+1f  e 30  7 3a 35  e 28 
+1c 2a 37 16 36 33 14 1d 
+15 1f 32  a 10 2c 3e 19 
+1e 1a 3b 19 36 3c 27 25 
+ 6 30  b 2f 3f  7  1 32 
+
+
+rm -rf ./src/obj ./bin/DES
+mkdir -p ./src/obj
+g++ -g -I ./inc -c -o  src/obj/main.o src/main.cc
+g++ -g -I ./inc -c -o  src/obj/DES.o src/DES.cc
+g++ -o ./bin/DES ./src/obj/main.o ./src/obj/DES.o 
+sucess!
+256K	./bin/DES
+input key:
+caculate!!
+
+
+
+f0 aa f0 aa ef 4a 65 44 
+
+ef 4a 65 44 cc 01 77 09 
+
+cc 01 77 09 a2 5c 0b f4 
+
+a2 5c 0b f4 77 22 00 45 
+
+77 22 00 45 8a 4f a6 37 
+
+8a 4f a6 37 e9 67 cd 69 
+
+e9 67 cd 69 06 4a ba 10 
+
+06 4a ba 10 d5 69 4b 90 
+
+d5 69 4b 90 24 7c c6 7a 
+
+24 7c c6 7a b7 d5 d7 b2 
+
+b7 d5 d7 b2 c5 78 3c 78 
+
+c5 78 3c 78 75 bd 18 58 
+
+75 bd 18 58 18 c3 15 5a 
+
+18 c3 15 5a c2 8c 96 0d 
+
+c2 8c 96 0d 43 42 32 34 
+
+43 42 32 34 0a 4c d9 95 
+dec Lens: 8
+enc Lens: 117
+input:
+1 23 45 67 89 ab cd ef 
+output:
+85 e8 13 54 f a b4 5 
+key:
+13 34 57 79 9b bc df f1 
+subkey:
+32 33 36  b  3 21 1f 35 
+ 6 30  b 2f 3f  7  1 32 
+1e 1a 3b 19 36 3c 27 25 
+15 1f 32  a 10 2c 3e 19 
+1c 2a 37 16 36 33 14 1d 
+1f  e 30  7 3a 35  e 28 
+18 3a 14 3e 14  7 2c 2f 
+3b  8 12 37 3d 21 22 3c 
+3d 38 28 3a 30 13 2f 3b 
+38  d 2f 2b 3b 1e 1e  1 
+2c 1f  d  7 2e 24 19  f 
+ 8 15 3f 13 37 2d  e  6 
+1d 17  7 35 25  6 1f 29 
+25 3c 17 11 3e 2b 29  1 
+17 34  e 37 3c 2e 1c 3a 
+2f 39  6  d  f 13 3c  a 
+32 33 36  b  3 21 1f 35 
+
+subDecDESkey:
+32 33 36  b  3 21 1f 35 
+32 33 36  b  3 21 1f 35 
+2f 39  6  d  f 13 3c  a 
+17 34  e 37 3c 2e 1c 3a 
+25 3c 17 11 3e 2b 29  1 
+1d 17  7 35 25  6 1f 29 
+ 8 15 3f 13 37 2d  e  6 
+2c 1f  d  7 2e 24 19  f 
+38  d 2f 2b 3b 1e 1e  1 
+3d 38 28 3a 30 13 2f 3b 
+3b  8 12 37 3d 21 22 3c 
+18 3a 14 3e 14  7 2c 2f 
+1f  e 30  7 3a 35  e 28 
+1c 2a 37 16 36 33 14 1d 
+15 1f 32  a 10 2c 3e 19 
+1e 1a 3b 19 36 3c 27 25 
+ 6 30  b 2f 3f  7  1 32 
+
+

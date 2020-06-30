@@ -34,7 +34,7 @@ int main(int argc,char *argv[])
 	des.exchangeKeys(ifsKeydata);
 	
 	// caculate
-	des.caculate();
+	des.DESCaculate(Decode);
 	
 	// out data
 	cout << des;

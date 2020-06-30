@@ -20,6 +20,15 @@
 
 
 #define COMBINA_HEX(LowHex,HightHex)	(LowHex | (HightHex<<4))
+enum	DESDEC_ENC{
+	Encry,
+	Decode,
+};
+enum	DIRECT{
+	LEFT_DIR,
+	RIGHT_DIR,
+};
+
 
 using namespace std;
 class DES{
@@ -31,9 +40,12 @@ public:
 	DES()=default;
 	static istream &exchangeKeys(istream &);
 	static ifstream &exchangeKeys(ifstream &);
-	void caculate();
+	void creatDESsubKey(DESDEC_ENC DEC_ENV);
+	void DESCaculate(DESDEC_ENC	DEC_ENC);
+	void desF_funs(array<int,8> &arObj,array<int,8> &subkey);
 
 	static array<int,ROUNDLENTH> 		 				arDESround;		 	//DES的轮常数
+	static array<int,ROUNDLENTH> 		 				arDESDecround;		//DES Dec的轮常数
 	static array<int,KEYLENTH> 			 				arDESkey;			//DES的秘钥
 	static array<int,KEYEXCBOOKLENTH>    				arDESkeyExcBook;	//DES的秘钥置换表格
 	static array<int,INPUTEXCBOOKLENTH>  				arDESInputBook;	 	//DES的输入置换表格
@@ -53,7 +65,8 @@ private:
 
 //funs declear
 unsigned char bitGetByte(deque<unsigned char>::iterator &it,unsigned int u32lens);
-void shiftLeftMove(deque<unsigned char> &deq,int shiftNum);
+void shiftMove(deque<unsigned char> &deq,int shiftNum);
+void shiftMove(deque<unsigned char> &deq,int shiftNum,DIRECT Dirt);
 template<typename inarMax,typename inarKeyMax>
 void excBytetoBitBox(
 	inarMax &inputMaxtrix,
@@ -66,5 +79,16 @@ bool XORmaxtrix(
 	srcMax &inputMaxtrix,
 	desMax &outputMaxtrix
 	);										//contain xor funs
+template<typename srcMax,typename desMax>
+bool XORmaxtrix(
+	srcMax &inputMaxtrix,
+	desMax &outputMaxtrix,
+	int    lens
+	);
+	
 int excDataByS_Box(array<int,DESS_BOXLENTH> subS_BOX,int inputData);
+
+
+
+
 #endif

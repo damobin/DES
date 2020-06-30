@@ -1,10 +1,16 @@
 #include <DES.h>
 #include <iomanip>
 #include <public.h>
+#include <string>
 
 array<int,ROUNDLENTH> 		 DES::arDESround	 =\
 {
   1 , 1 , 2 , 2 , 2 , 2 , 2 , 2 ,
+  1 , 2 , 2 , 2 , 2 , 2 , 2 , 1 
+};
+array<int,ROUNDLENTH> 		 DES::arDESDecround	 =\
+{
+  0 , 1 , 2 , 2 , 2 , 2 , 2 , 2 ,
   1 , 2 , 2 , 2 , 2 , 2 , 2 , 1 
 };
 array<int,KEYLENTH> 		 DES::arDESkey	     =\
@@ -139,80 +145,18 @@ array<int,IP_BOX_NUM> 	DES::arDESENDIPBOX = \
 };
 
 //DES caculate
-void DES::caculate()
+void DES::DESCaculate(DESDEC_ENC	DEC_ENC)
 {
-	int index=0;
-	int bytepos,bitpos;
 	int temp,affectBit,level;
-	unsigned char subKeyBit[56];
-	unsigned char subKey[8];
-	array<int,KEYLENTH>  arsubKey(arDESkey);
 	vector<int>          ivtinputtemp(inputDESdata);
-	deque<unsigned char> partHead(28);
-	deque<unsigned char> partTail(28);
 	deque<unsigned char> inDpartHead(32);
 	deque<unsigned char> inDpartTail(32);
 	//sub key creat
 	//EXC KEY
 	cout<<"caculate!!"<<endl;
-	//对秘钥进行表格1置换
-	affectBit = 7;
-	level	  = 8;
-	excBytetoBitBox<array<int,KEYEXCBOOKLENTH>,array<int,KEYLENTH>>\
-		(arDESkeyExcBook,arsubKey,level,affectBit);
-	for(int i = 0;i<level;i++){
-		uint8_t bitGetobj= 1<<(affectBit-1);
-		for(int j = 0;j<affectBit;j++){
-			//秘钥二进制分为两块part A  part B
-			if(i<4)
-				partHead[i*affectBit + j]     = arsubKey[i] & bitGetobj;
-			else
-				partTail[(i-4)*affectBit + j] = arsubKey[i] & bitGetobj;
-			bitGetobj >>= 1;
-		}
-	}
+	creatDESsubKey(DEC_ENC);
+
 	
-	//将PART A 和 PART B生成子秘钥存储到 数组中
-	for(unsigned int i =0 ;i<17;i++){
-		if(i==0){
-			deque<unsigned char>::iterator it;
-			for(unsigned int j=0 ;j<8;j++){
-				if(j<4){
-					it = partHead.begin() +j*7;
-					subDESkey[i][j] = bitGetByte(it  ,7 );
-				}else{
-					it = partTail.begin()+ (j-4)*7;
-					subDESkey[i][j] = bitGetByte(it  ,7 );
-				}
-			}
-		}else{
-			//round num
-			uint8_t roundnum = arDESround[i-1];
-			
-			//shift left move partHead
-			shiftLeftMove(partHead,roundnum);
-			//shift left move partTail
-			shiftLeftMove(partTail,roundnum);
-			
-			deque<unsigned char>::iterator it;
-			for(unsigned int j=0 ;j<8;j++){
-				if(j<4){
-					it = partHead.begin() +j*7;
-					subDESkey[i][j] = bitGetByte(it  ,7 );
-				}else{
-					it = partTail.begin()+ (j-4)*7;
-					subDESkey[i][j] = bitGetByte(it  ,7 );
-				}
-			}
-		}	
-	}
-	//使用PC-2 表格对子秘钥进行转置
-	affectBit = 6;
-	level	  = 7;
-	for(int i=0;i<17;i++)
-		excBytetoBitBox< array<int,SUBKEYEXCBOOKLENTH> , array<int,8> >	\
-			(arDESsubkeyExcBook,subDESkey[i],level,affectBit);
-			
 	//used box export Input data
 	affectBit = 8;
 	level	  = 8;
@@ -244,52 +188,50 @@ void DES::caculate()
 				}
 			}
 		}else{
-			level 		= 8;
-			affectBit 	= 6;
-			array<int,8> arInTempHead={subDESInData[i-1][0],subDESInData[i-1][1],\
-				subDESInData[i-1][2],subDESInData[i-1][3]};
-			array<int,8> arInTempTail={subDESInData[i-1][4],subDESInData[i-1][5],\
-				subDESInData[i-1][6],subDESInData[i-1][7]};
-				
-			//last ln rn  	subDESInData[i-1][]
-			excBytetoBitBox< array<int,INPUTSUBBOOKLENTH> , array<int,8> >	\
-				(arDESSubdataExcBook,arInTempTail,level,affectBit);
-
-			//exc xor funs     if lens err throw err
-			try{
-				XORmaxtrix< array<int,8>,array<int,8> >(subDESkey[i],arInTempTail);
-			}catch(const char *msg){
-				cout <<"ERR :"<<msg<<endl;
-				exit(0);
-			}
-			//used s-box exc data
-			for(int j=0;j<8;j++){
-				arInTempTail[j] = excDataByS_Box(DES::arDESSBOX[j],arInTempTail[j]);
-			}
-
-			//P_BOX EXC DATA  
-			level 		= 4;
-			affectBit 	= 4;
-			excBytetoBitBox< array<int,P_BOX_NUM> , array<int,8> >	\
-				(arDESPBOX,arInTempTail,level,affectBit);
 			
-			for(int j=0;j<8;j+=2){
-				arInTempTail[j/2]=COMBINA_HEX(arInTempTail[j+1],arInTempTail[j]);
+			array<int,8> arInTempHead;
+			array<int,8> arInTempTail;
+			
+			if(DEC_ENC == Encry){
+				copy(subDESInData[i-1].begin()  ,subDESInData[i-1].begin()+4	,arInTempHead.begin());
+				copy(subDESInData[i-1].begin()+4,subDESInData[i-1].begin()+8    ,arInTempTail.begin());
+				
+				desF_funs(arInTempTail,subDESkey[i]);
+				//exc xor funs     if lens err throw err
+				try{
+					XORmaxtrix< array<int,8>,array<int,8> >(arInTempHead,arInTempTail);
+				}catch(const char *msg){
+					cout <<"ERR :"<<msg<<endl;
+					exit(0);
+				}
+				for(int j=0;j<8;j++){
+					if(j<4)
+						subDESInData[i-1+1][j] = subDESInData[i-1][j+4];
+					else
+						subDESInData[i-1+1][j] = arInTempTail[j-4];
+				}
+			}else{
+				copy(subDESInData[i-1].begin()  ,subDESInData[i-1].begin()+4	,arInTempHead.begin());
+				copy(subDESInData[i-1].begin()+4,subDESInData[i-1].begin()+8    ,arInTempTail.begin());
+				
+				desF_funs(arInTempHead,subDESkey[17-i]);
+				//exc xor funs     if lens err throw err
+				try{
+					XORmaxtrix< array<int,8>,array<int,8> >(arInTempTail,arInTempHead,4);
+				}catch(const char *msg){
+					cout <<"ERR :"<<msg<<endl;
+					exit(0);
+				}
+
+				for(int j=0;j<8;j++){
+					if(j<4)
+						subDESInData[i-1+1][j] = arInTempHead[j];
+					else
+						subDESInData[i-1+1][j] = subDESInData[i-1][j-4];
+				}
 			}
-			//exc xor funs     if lens err throw err
-			try{
-				XORmaxtrix< array<int,8>,array<int,8> >(arInTempHead,arInTempTail);
-			}catch(const char *msg){
-				cout <<"ERR :"<<msg<<endl;
-				exit(0);
-			}
-			for(int j=0;j<8;j++){
-				if(j<4)
-					subDESInData[i-1+1][j] = subDESInData[i-1][j+4];
-				else
-					subDESInData[i-1+1][j] = arInTempTail[j-4];
-			}
-		}                     
+			PRINTSTRDATA(subDESInData[i],8,16);
+		}                    
 	}
 	//exc head tail pos
 	for(int temp,i =0;i<4;i++){
@@ -298,15 +240,46 @@ void DES::caculate()
 		subDESInData[16][i+4] 	= temp;
 	}
 	
-	PRINTSTRDATA(subDESInData[16],8,16);
 	//P_BOX EXC DATA  
 	level 		= 8;
 	affectBit 	= 8;
 	excBytetoBitBox< array<int,IP_BOX_NUM> , array<int,8> >	\
 		(arDESENDIPBOX,subDESInData[16],level,affectBit);
-	
-	PRINTSTRDATA(subDESInData[16],8,16);
+	for(int i=0;i<8;i++){
+		 outputDESdata.push_back(subDESInData[16][i]);
+	}
 }
+
+void DES::desF_funs(array<int,8> &arObj,array<int,8> &subkey)
+{
+	uint8_t  level,affectBit;
+	//last ln rn  	subDESInData[i-1][]
+	level 		= 8;
+	affectBit 	= 6;
+	excBytetoBitBox< array<int,INPUTSUBBOOKLENTH> , array<int,8> >	\
+		(arDESSubdataExcBook,arObj,level,affectBit);
+	//exc xor funs     if lens err throw err
+	try{
+		XORmaxtrix< array<int,8>,array<int,8> >(subkey,arObj);
+	}catch(const char *msg){
+		cout <<"ERR :"<<msg<<endl;
+		exit(0);
+	}
+	//used s-box exc data
+	for(int j=0;j<8;j++){
+		arObj[j] = excDataByS_Box(DES::arDESSBOX[j],arObj[j]);
+	}
+	//P_BOX EXC DATA  
+	level 		= 4;
+	affectBit 	= 4;
+	excBytetoBitBox< array<int,P_BOX_NUM> , array<int,8> >	\
+		(arDESPBOX,arObj,level,affectBit);
+
+	for(int j=0;j<8;j+=2){
+		arObj[j/2]=COMBINA_HEX(arObj[j+1],arObj[j]);
+	}
+}
+
 
 int excDataByS_Box(array<int,DESS_BOXLENTH> subS_BOX,int inputData)
 {
@@ -318,6 +291,74 @@ int excDataByS_Box(array<int,DESS_BOXLENTH> subS_BOX,int inputData)
 	return   subS_BOX[index];
 }
 
+
+
+void DES::creatDESsubKey(DESDEC_ENC DEC_ENV)
+{
+	int affectBit,level;
+	array<int,KEYLENTH>  arsubKey(arDESkey);
+	deque<unsigned char> partHead(28);
+	deque<unsigned char> partTail(28);
+	
+	//对秘钥进行表格1置换
+	affectBit = 7;
+	level	  = 8;
+	excBytetoBitBox<array<int,KEYEXCBOOKLENTH>,array<int,KEYLENTH>>\
+		(arDESkeyExcBook,arsubKey,level,affectBit);
+
+	for(int i = 0;i<level;i++){
+		uint8_t bitGetobj= 1<<(affectBit-1);
+		for(int j = 0;j<affectBit;j++){
+			//秘钥二进制分为两块part A  part B
+			if(i<4)
+				partHead[i*affectBit + j]     = arsubKey[i] & bitGetobj;
+			else
+				partTail[(i-4)*affectBit + j] = arsubKey[i] & bitGetobj;
+			bitGetobj >>= 1;
+		}
+	}
+	
+	//将PART A 和 PART B生成子秘钥存储到 数组中
+	for(unsigned int i =0 ;i<17;i++){
+		if(i==0){
+			deque<unsigned char>::iterator it;
+			for(unsigned int j=0 ;j<8;j++){
+				if(j<4){
+					it = partHead.begin() +j*7;
+					subDESkey[i][j] = bitGetByte(it  ,7 );
+				}else{
+					it = partTail.begin()+ (j-4)*7;
+					subDESkey[i][j] = bitGetByte(it  ,7 );
+				}
+			}
+		}else{
+			//round num
+			uint8_t roundnum;
+			roundnum = arDESround[i-1];
+			shiftMove(partHead,roundnum);
+			shiftMove(partTail,roundnum);
+
+			
+			deque<unsigned char>::iterator it;
+			for(unsigned int j=0 ;j<8;j++){
+				if(j<4){
+					it = partHead.begin() +j*7;
+					subDESkey[i][j] = bitGetByte(it  ,7 );
+				}else{
+					it = partTail.begin()+ (j-4)*7;
+					subDESkey[i][j] = bitGetByte(it  ,7 );
+				}
+			}
+		}	
+	}
+	//使用PC-2 表格对子秘钥进行转置
+	affectBit = 6;
+	level	  = 7;
+	for(int i=0;i<17;i++){
+		excBytetoBitBox< array<int,SUBKEYEXCBOOKLENTH> , array<int,8> >	\
+			(arDESsubkeyExcBook,subDESkey[i],level,affectBit);
+	}	
+}
 
 
 //对输入数据  使用表格进行位转置
@@ -353,6 +394,7 @@ void excBytetoBitBox(
 		bitBuff.push_back(temp);
 		index++;
 	}
+
 	//after exc data exc hex list
 	for(int i = 0;i<keyMaxtrix.size();i++){
 		keyMaxtrix[i] = 0;
@@ -384,6 +426,24 @@ bool XORmaxtrix(
 	return true;
 }
 
+template<typename srcMax,typename desMax>
+bool XORmaxtrix(
+	srcMax &inputMaxtrix,
+	desMax &outputMaxtrix,
+	int    lens
+	)
+{
+	if(inputMaxtrix.size()!=outputMaxtrix.size()){
+		throw "XOR LEN DIFF";
+		return false;
+	}
+	for(auto i=inputMaxtrix.begin(),j=outputMaxtrix.begin();lens>0;i++,j++){
+		(*j) = (*i)^(*j);
+		lens--;
+	}
+	return true;
+}
+
 
 unsigned char bitGetByte(deque<unsigned char>::iterator &it,unsigned int u32lens)
 {
@@ -399,15 +459,34 @@ unsigned char bitGetByte(deque<unsigned char>::iterator &it,unsigned int u32lens
 	return temp;
 }
 
-void shiftLeftMove(deque<unsigned char> &deq,int shiftNum)
+void shiftMove(deque<unsigned char> &deq,int shiftNum)
 {
 	unsigned char temp;
 	for(int i=0;i<shiftNum;i++){
-		temp = deq[0];
+		temp = deq.front();
 		deq.pop_front();
 		deq.push_back(temp);
 	}
 }
+
+void shiftMove(deque<unsigned char> &deq,int shiftNum,DIRECT Dirt)
+{
+	unsigned char temp;
+	if(Dirt == LEFT_DIR){
+		for(int i=0;i<shiftNum;i++){
+			temp = deq.front();
+			deq.pop_front();
+			deq.push_back(temp);
+		}
+	}else{
+		for(int i=0;i<shiftNum;i++){
+			temp = deq.back();
+			deq.pop_back();
+			deq.push_front(temp);
+		}
+	}
+}
+
 
 //exc DES key
 istream &DES::exchangeKeys(istream &os)
@@ -479,7 +558,7 @@ ostream & operator <<(ostream &os,const DES &D)
 	if(D.outputDESdata.empty()){
 		os<<"empty output"<<endl;
 	}else{
-		os<<"input:"<<endl;
+		os<<"output:"<<endl;
 		for(auto i=D.outputDESdata.begin(); i != D.outputDESdata.end(); i++){	
 			os<<hex<< *i<<" ";
 		}
@@ -504,6 +583,9 @@ ostream & operator <<(ostream &os,const DES &D)
 		}
 		os<<endl;
 	}
+	
+
+	
 	os<<endl;
 	return os;
 }
@@ -526,7 +608,7 @@ ofstream & operator <<(ofstream &os,const DES &D)
 	if(D.outputDESdata.empty()){
 		os<<"empty output"<<endl;
 	}else{
-		os<<"input:"<<endl;
+		os<<"output:"<<endl;
 		for(auto i=D.outputDESdata.begin(); i != D.outputDESdata.end(); i++){	
 			os<<hex<< *i<<" ";
 		}
@@ -551,6 +633,8 @@ ofstream & operator <<(ofstream &os,const DES &D)
 		}
 		os<<endl;
 	}
+	
+
 	os<<endl;
 	return os;
 }
